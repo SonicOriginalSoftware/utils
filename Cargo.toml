@@ -19,4 +19,8 @@ path = "bin/cp.rs"
 name = "ls"
 path = "bin/ls.rs"
 
+[[bin]]
+name = "mv"
+path = "bin/mv.rs"
+
 [dependencies]
