@@ -1,0 +1,22 @@
+[package]
+name = "utils"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lib"
+path = "lib/mod.rs"
+
+[[bin]]
+name = "pwd"
+path = "bin/pwd.rs"
+
+[[bin]]
+name = "cp"
+path = "bin/cp.rs"
+
+[[bin]]
+name = "ls"
+path = "bin/ls.rs"
+
+[dependencies]
