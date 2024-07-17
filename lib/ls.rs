@@ -14,7 +14,10 @@ fn format_entry(entry: DirEntry) -> Option<String> {
     };
 
     let name = match entry.file_name().into_string() {
-        Ok(p) => p,
+        Ok(p) => match metadata.is_dir() {
+            true => format!("\x1b[34m{p}\x1b[0m"),
+            false => p,
+        },
         Err(_) => return None,
     };
 
@@ -62,18 +65,14 @@ fn format_entry(entry: DirEntry) -> Option<String> {
 
     let user = metadata.uid();
     let group = metadata.gid();
-    let size = metadata.size();
+    let size = match metadata.size() {
+        s if s > 1000000000 => format!("{:.2} G", s as f32 / 100000.0),
+        s if s > 1000000 => format!("{:.2} M", s as f32 / 10000.0),
+        s if s > 1000 => format!("{:.2} K", s as f32 / 1000.0),
+        s => format!("{s:4.2} B"),
+    };
 
-    Some(format!("{perms} {user} {group} {size} {name}"))
-
-    // logger.log(&format!(
-    //     "{pad_char:<left_pad$}{name:<line_width$}{brief}",
-    //     pad_char = " ",
-    //     left_pad = 6,
-    //     line_width = 20,
-    //     name = each_brief.0,
-    //     brief = each_brief.1,
-    // ));
+    Some(format!("{perms} {size} {user:^8} {group:^8} {name}"))
 }
 
 pub fn run(args: &[String]) -> Result<Vec<String>, String> {
