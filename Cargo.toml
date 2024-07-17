@@ -24,3 +24,4 @@ name = "mv"
 path = "bin/mv.rs"
 
 [dependencies]
+uzers = "0.12.0"

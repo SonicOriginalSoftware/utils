@@ -1,3 +1,5 @@
+use uzers::{get_group_by_gid, get_user_by_uid};
+
 use crate::{
     file_system::{BLK, CHAR, DIR, EXEC, FIFO, FILE, FT, LINK, READ, SGID, SOCK, STKY, SUID, WRITE},
     pwd,
@@ -63,8 +65,11 @@ fn format_entry(entry: DirEntry) -> Option<String> {
         perms.push(special_char);
     }
 
-    let user = metadata.uid();
-    let group = metadata.gid();
+    // let user = metadata.uid();
+    let user = get_user_by_uid(metadata.uid())?;
+    let user_name = user.name().to_str()?;
+    let group = get_group_by_gid(metadata.gid())?;
+    let group_name = group.name().to_str()?;
     let size = match metadata.size() {
         s if s > 1000000000 => format!("{:.2} G", s as f32 / 100000.0),
         s if s > 1000000 => format!("{:.2} M", s as f32 / 10000.0),
@@ -72,7 +77,7 @@ fn format_entry(entry: DirEntry) -> Option<String> {
         s => format!("{s:4.2} B"),
     };
 
-    Some(format!("{perms} {size} {user:^8} {group:^8} {name}"))
+    Some(format!("{perms} {size} {user_name:^8} {group_name:^8} {name}"))
 }
 
 pub fn run(args: &[String]) -> Result<Vec<String>, String> {
