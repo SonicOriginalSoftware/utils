@@ -1,10 +1,10 @@
-pub const EXEC: u32 = 0x40;
-pub const WRITE: u32 = 0x80;
-pub const READ: u32 = 0x100;
+pub const EXEC: u32 = 0x0040;
+pub const WRITE: u32 = 0x0080;
+pub const READ: u32 = 0x0100;
 
-pub const STKY: u32 = 0x200;
-pub const SGID: u32 = 0x400;
-pub const SUID: u32 = 0x800;
+pub const STKY: u32 = 0x0200;
+pub const SGID: u32 = 0x0400;
+pub const SUID: u32 = 0x0800;
 
 pub const FIFO: u32 = 0x1000;
 pub const CHAR: u32 = 0x2000;
