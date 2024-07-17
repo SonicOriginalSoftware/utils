@@ -1,8 +1,10 @@
-use std::process::ExitCode;
+use std::{env::args, process::ExitCode};
 
 fn main() -> ExitCode {
     let command_name = "ls";
-    match lib::ls::run() {
+    let args = args().collect::<Vec<String>>();
+
+    match lib::ls::run(&args) {
         Ok(entries) => {
             for each_path in entries {
                 println!("{}", each_path);
