@@ -1,4 +1,4 @@
-mod file_system;
+mod fs;
 
 pub mod error;
 pub mod ls;
