@@ -1,9 +1,9 @@
 #[cfg(test)]
 #[test]
 fn test_ls() {
-    use crate::ls::run;
-    match run(&[String::from("")]) {
-        Err(err) => panic!("{}", err),
-        Ok(_e) => (),
+    let args = [String::from(""), String::from("/")];
+    let entries = crate::ls::run(&args).unwrap();
+    for each_entry in entries {
+        println!("{}", each_entry)
     }
 }

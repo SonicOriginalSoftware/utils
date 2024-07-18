@@ -24,18 +24,19 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 
 ## Commands
 
-- `cp` (**DONE**)
-- `ls` (**TWEAKING**)
-- `mv` (**ON DECK**)
 - `pwd` (**DONE**)
-- `rm`
+- `cp` (**DONE**)
+- `mv` (**DONE**)
+- `ls` (**DONE**)
+- `rm` (**ON DECK**)
+- `mkdir`
+- `env` ?
 - `cat` ?
 - `sh`
   - `.`
   - `cd`
   - `echo`
   - `exit`
-  - `env` ?
 
 - ...and probably more to come!
 

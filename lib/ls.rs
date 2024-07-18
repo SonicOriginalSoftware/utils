@@ -1,129 +1,218 @@
-use uzers::{get_group_by_gid, get_user_by_uid};
-
-use crate::{
-    file_system::{BLK, CHAR, DIR, EXEC, FIFO, FILE, FT, LINK, READ, SGID, SOCK, STKY, SUID, WRITE},
-    pwd,
-};
 use std::{
+    cmp::Ordering,
+    fmt::{write, Display},
     fs::{read_dir, DirEntry},
     io::{stdout, IsTerminal},
     os::unix::fs::MetadataExt,
 };
 
-fn format_entry(entry: DirEntry) -> Option<String> {
-    let metadata = match entry.metadata() {
-        Ok(p) => p,
-        Err(_) => return None,
-    };
-    let user = get_user_by_uid(metadata.uid())?;
-    let user_name = user.name().to_str()?;
-    let group = get_group_by_gid(metadata.gid())?;
-    let group_name = group.name().to_str()?;
+use uzers::{get_group_by_gid, get_user_by_uid};
 
-    let mode = metadata.mode();
-    let suid = (mode & SUID) != 0;
-    let guid = (mode & SGID) != 0;
-    let stky = (mode & STKY) != 0;
-    let o = stdout();
+use crate::{
+    error::Error,
+    file_system::{FileType, Permissions, SpecialBit, FT},
+    pwd,
+};
 
-    let name = match entry.file_name().into_string() {
-        Ok(p) if metadata.is_dir() && o.is_terminal() => format!("\x1b[34m{p}\x1b[0m"),
-        Ok(p) if mode & 0o111 != 0 && o.is_terminal() => format!("\x1b[35m{p}\x1b[0m"),
-        Ok(p) => p,
-        Err(_) => return None,
-    };
-
-    let mut perms = String::new();
-    let file_type_bit = match mode & FT {
-        DIR => 'd',
-        CHAR => 'c',
-        BLK => 'b',
-        FILE => '-',
-        FIFO => 'p',
-        LINK => 'l',
-        SOCK => 's',
-        _ => '?',
-    };
-    perms.push(file_type_bit);
-
-    let permission_bits = [
-        (READ, 'r'),
-        (WRITE, 'w'),
-        (EXEC, 'x'),
-        (READ >> 3, 'r'),
-        (WRITE >> 3, 'w'),
-        (EXEC >> 3, 'x'),
-        (READ >> 6, 'r'),
-        (WRITE >> 6, 'w'),
-        (EXEC >> 6, 'x'),
-    ];
-
-    for (i, &(bit, on_char)) in permission_bits.iter().enumerate() {
-        let is_set = (mode & bit) != 0;
-        let special_char = match i {
-            #[rustfmt::skip]
-            2 if suid => { if is_set { 's' } else { 'S' } }, // setuid
-            #[rustfmt::skip]
-            5 if guid => { if is_set { 's' } else { 'S' } }, // setgid
-            #[rustfmt::skip]
-            8 if stky => { if is_set { 't' } else { 'T' } }, // sticky bit
-            #[rustfmt::skip]
-            _ => { if is_set { on_char } else { '-' } },
-        };
-        perms.push(special_char);
-    }
-
-    let size = match metadata.size() {
-        s if s > 1000000000 => format!("{:5.1} G", s as f32 / 100000.0),
-        s if s > 1000000 => format!("{:5.1} M", s as f32 / 10000.0),
-        s if s > 1000 => format!("{:5.1} K", s as f32 / 1000.0),
-        s => format!("{s:5.1} B"),
-    };
-
-    Some(format!("{perms} {size} {user_name:^8} {group_name:^8} {name}"))
+#[derive(Debug)]
+pub struct Entry {
+    mode: u32,
+    file_type: FileType,
+    is_suid: bool,
+    is_guid: bool,
+    is_sticky: bool,
+    is_executable: bool,
+    size: u64,
+    user: String,
+    group: String,
+    name: String,
+    path: String,
 }
 
-pub fn run(args: &[String]) -> Result<Vec<String>, String> {
-    let target = match args.get(1) {
-        Some(p) => p,
-        None => &match pwd::run() {
-            Err(err) => return Err(err.to_string()),
+impl Entry {
+    fn new(entry: DirEntry) -> Result<Self, Error> {
+        let name = match entry.file_name().to_str() {
+            Some(p) => p.to_string(),
+            None => return Err(Error::String(format!("Could not construct file name for {:?}", entry))),
+        };
+
+        let metadata = match entry.metadata() {
             Ok(p) => p,
-        },
-    };
+            Err(_) => return Err(Error::String(format!("Could not construct file metadata for {}", name))),
+        };
+        let mode = metadata.mode();
+        let size = metadata.size();
 
-    let dirs = match read_dir(target) {
-        Ok(p) => p,
-        Err(err) => return Err(err.to_string()),
-    };
+        let file_type = FileType::try_from(mode & FT)?;
+        let is_suid = (SpecialBit::SetUID & mode) != 0;
+        let is_guid = (SpecialBit::SetGID & mode) != 0;
+        let is_sticky = (SpecialBit::Sticky & mode) != 0;
+        let is_executable = (FileType::Exec & mode) != 0;
 
-    let mut directories = Vec::<DirEntry>::new();
-    let mut files = Vec::<DirEntry>::new();
-
-    for each_entry in dirs {
-        match each_entry {
-            Err(err) => return Err(err.to_string()),
-            Ok(entry) => match entry.metadata() {
-                Err(_) => (),
-                Ok(p) => {
-                    if p.is_dir() {
-                        directories.push(entry);
-                    } else {
-                        files.push(entry);
-                    }
-                }
+        let user = match get_user_by_uid(metadata.uid()) {
+            Some(p) => match p.name().to_str() {
+                Some(l) => l.to_string(),
+                None => return Err(Error::String(format!("Could not extract user name for {}", name))),
             },
+            None => return Err(Error::String(format!("Could not extract user for {}", name))),
+        };
+        let group = match get_group_by_gid(metadata.gid()) {
+            Some(p) => match p.name().to_str() {
+                Some(l) => l.to_string(),
+                None => return Err(Error::String(format!("Could not extract user name for {}", name))),
+            },
+            None => return Err(Error::String(format!("Could not extract user for {}", name))),
+        };
+
+        let path = match entry.path().canonicalize()?.to_str() {
+            Some(p) => p,
+            None => return Err(Error::String(format!("Could not canonicalize path for {}", name))),
+        }
+        .to_string();
+
+        Ok(Self {
+            mode,
+            size,
+            name,
+            user,
+            group,
+            path,
+            file_type,
+            is_suid,
+            is_guid,
+            is_sticky,
+            is_executable,
+        })
+    }
+}
+
+impl Display for Entry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut perms = String::new();
+        perms.push(match self.file_type {
+            FileType::Pipe => 'p',
+            FileType::Char => 'c',
+            FileType::Dir => 'd',
+            FileType::Block => 'b',
+            FileType::File => '-',
+            FileType::Link => 'l',
+            FileType::Sock => 's',
+            _ => '?',
+        });
+
+        // Could do list comprehension
+        // do generate list of permission bits
+        // using initial
+        // (mode & (Exec >> i * 3) != 0, 'x')
+        // (mode & (WRITE >> i * 3) != 0, 'w')
+        // (mode & (READ >> i * 3) != 0, 'r')
+        let permission_bits = [
+            (Permissions::Read & self.mode != 0, 'r'),
+            (Permissions::Write & self.mode != 0, 'w'),
+            (Permissions::Exec & self.mode != 0, 'x'),
+            ((Permissions::Read >> 3) & self.mode != 0, 'r'),
+            ((Permissions::Write >> 3) & self.mode != 0, 'w'),
+            ((Permissions::Exec >> 3) & self.mode != 0, 'x'),
+            ((Permissions::Read >> 6) & self.mode != 0, 'r'),
+            ((Permissions::Write >> 6) & self.mode != 0, 'w'),
+            ((Permissions::Exec >> 6) & self.mode != 0, 'x'),
+        ];
+
+        for (i, &(is_set, on_char)) in permission_bits.iter().enumerate() {
+            let special_char = match i {
+                #[rustfmt::skip]
+            2 if self.is_suid => { if is_set { 's' } else { 'S' } },
+                #[rustfmt::skip]
+            5 if self.is_guid => { if is_set { 's' } else { 'S' } },
+                #[rustfmt::skip]
+            8 if self.is_sticky => { if is_set { 't' } else { 'T' } },
+                #[rustfmt::skip]
+            _ => { if is_set { on_char } else { '-' } },
+            };
+            perms.push(special_char);
+        }
+
+        let size = match self.size {
+            s if s > 1000000000 => format!("{:5.1} G", s as f32 / 100000.0),
+            s if s > 1000000 => format!("{:5.1} M", s as f32 / 10000.0),
+            s if s > 1000 => format!("{:5.1} K", s as f32 / 1000.0),
+            s => format!("{s:5.1} B"),
+        };
+
+        let is_terminal = stdout().is_terminal();
+
+        let file_name: String;
+        // if metadata.is_symlink() => {
+        if self.file_type == FileType::Link {
+            file_name = format!("{:<20} -> {}", self.name, self.path);
+        } else if self.file_type == FileType::Dir && is_terminal {
+            file_name = format!("\x1b[34m{}\x1b[0m", self.name);
+        } else if self.is_executable && is_terminal {
+            file_name = format!("\x1b[35m{}\x1b[0m", self.name);
+        } else {
+            file_name = String::from(&self.name);
+        }
+
+        write(
+            f,
+            format_args!(
+                "{perms} {size} {user_name:^8} {group_name:^8} {file_name}",
+                user_name = self.user,
+                group_name = self.group,
+            ),
+        )
+    }
+}
+
+impl PartialEq for Entry {
+    fn eq(&self, other: &Self) -> bool {
+        self.mode == other.mode
+            && self.file_type == other.file_type
+            && self.is_suid == other.is_suid
+            && self.is_guid == other.is_guid
+            && self.is_sticky == other.is_sticky
+            && self.is_executable == other.is_executable
+            && self.size == other.size
+            && self.user == other.user
+            && self.group == other.group
+            && self.name == other.name
+    }
+}
+
+impl Eq for Entry {}
+
+impl PartialOrd for Entry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Entry {
+    fn cmp<'a>(&'a self, other: &'a Self) -> std::cmp::Ordering {
+        let file_type_ordering = self.file_type.cmp(&other.file_type);
+
+        if file_type_ordering == Ordering::Equal {
+            // self.name.to_ascii_lowercase().cmp(&other.name.to_ascii_lowercase())
+            self.name.cmp(&other.name)
+        } else {
+            file_type_ordering
         }
     }
+}
 
-    directories.sort_by_key(|each_entry_a| each_entry_a.path());
-    files.sort_by_key(|each_entry_a| each_entry_a.path());
+pub fn run(args: &[String]) -> Result<Vec<Entry>, Error> {
+    let target = match args.get(1) {
+        Some(p) => p,
+        None => &pwd::run()?,
+    };
 
-    let mut raw_collection = Vec::<DirEntry>::new();
-    raw_collection.append(&mut directories);
-    raw_collection.append(&mut files);
+    let mut entries: Vec<Entry> = read_dir(target)?
+        .map(|p| {
+            //
+            Entry::new(p.map_err(Error::IO)?)
+        })
+        .collect::<Result<_, _>>()?;
 
-    let collection = raw_collection.into_iter().flat_map(format_entry);
-
-    Ok(collection.collect::<Vec<String>>())
+    entries.sort();
+    Ok(entries)
 }

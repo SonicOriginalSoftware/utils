@@ -1,19 +1,12 @@
-use std::{env::args, process::ExitCode};
+use std::env::args;
 
-fn main() -> ExitCode {
-    let command_name = "ls";
+use lib::error::Error;
+
+fn main() -> Result<(), Error> {
     let args = args().collect::<Vec<String>>();
-
-    match lib::ls::run(&args) {
-        Ok(entries) => {
-            for each_path in entries {
-                println!("{}", each_path);
-            }
-            ExitCode::SUCCESS
-        }
-        Err(err) => {
-            eprintln!("{}: {}", command_name, err);
-            ExitCode::FAILURE
-        }
+    let entries = lib::ls::run(&args)?;
+    for each_entry in entries {
+        println!("{}", each_entry)
     }
+    Ok(())
 }

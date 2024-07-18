@@ -1,13 +1,10 @@
 use std::env::current_dir;
 
-pub fn run() -> Result<String, String> {
-    let cwd = match current_dir() {
-        Ok(p) => p,
-        Err(err) => return Err(format!("{}", err)),
-    };
+use crate::error::Error;
 
-    match cwd.to_str() {
+pub fn run() -> Result<String, Error> {
+    match current_dir()?.to_str() {
         Some(p) => Ok(p.to_owned()),
-        None => Err("Unable to translate working directory".to_string()),
+        None => Err(Error::String("Unable to translate working directory".to_string())),
     }
 }
