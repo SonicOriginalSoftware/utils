@@ -20,7 +20,6 @@ pub struct File {
     pub path: PathBuf,
     pub mode: Mode,
     pub size: Size,
-    pub kind: Kind,
     pub uid: u32,
     pub gid: u32,
 }
@@ -36,11 +35,9 @@ impl File {
 
         let mode = Mode(metadata.mode());
         let size = Size(metadata.size());
-        let kind = mode.file_type();
 
         Ok(Self {
             name,
-            kind,
             size,
             uid: metadata.uid(),
             gid: metadata.gid(),
@@ -62,7 +59,8 @@ impl Display for File {
         };
 
         let is_terminal = stdout().is_terminal();
-        let name = if self.kind == Kind::Link {
+        let kind = self.mode.file_type();
+        let name = if kind == Kind::Link {
             let resolved_path = match read_link(&self.path) {
                 Ok(p) => p.display().to_string(),
                 Err(_e) => return Err(std::fmt::Error),
@@ -72,7 +70,7 @@ impl Display for File {
             } else {
                 &format!("{:<20} -> {}", self.path.display(), resolved_path)
             }
-        } else if (self.kind == Kind::Dir) && is_terminal {
+        } else if (kind == Kind::Dir) && is_terminal {
             &format!("\x1b[34m{}\x1b[0m", self.name)
         } else if self.mode.is_executable() && is_terminal {
             &format!("\x1b[35m{}\x1b[0m", self.name)
@@ -84,7 +82,6 @@ impl Display for File {
             f,
             "{kind}{mode} {size} {user:^8} {group:^8} {name}",
             size = self.size,
-            kind = self.kind,
             mode = self.mode,
             user = user.to_string_lossy(),
             group = group.to_string_lossy(),
@@ -95,7 +92,6 @@ impl Display for File {
 impl PartialEq for File {
     fn eq(&self, other: &Self) -> bool {
         self.mode == other.mode
-            && self.kind == other.kind
             && self.size == other.size
             && self.uid == other.uid
             && self.gid == other.gid
@@ -113,7 +109,7 @@ impl PartialOrd for File {
 
 impl Ord for File {
     fn cmp<'a>(&'a self, other: &'a Self) -> std::cmp::Ordering {
-        let file_type_ordering = self.kind.cmp(&other.kind);
+        let file_type_ordering = self.mode.cmp(&other.mode);
 
         if file_type_ordering == Ordering::Equal {
             self.path

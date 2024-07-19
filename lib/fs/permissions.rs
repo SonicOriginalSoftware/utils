@@ -1,49 +1,59 @@
 use std::fmt::Display;
 
-pub enum PermissionMask {
+pub type PermissionMask = u32;
+
+pub enum Permissions {
     Unset = 0,
-    Read = 0x0040,
-    Write = 0x0080,
-    Exec = 0x0100,
+    Read = 0b100,
+    Write = 0b010,
+    Exec = 0b001,
 }
 
-const READ_CHAR: char = 'r';
-const WRITE_CHAR: char = 'w';
-const EXEC_CHAR: char = 'x';
-
-pub struct Permission(pub PermissionMask);
+pub struct Permission(u32);
 
 impl Permission {
+    const USER_SHIFT: u32 = 6;
+    const GROUP_SHIFT: u32 = 3;
+    const OTHER_SHIFT: u32 = 0;
+
+    pub fn mask(&self) -> PermissionMask {
+        self.0
+    }
+
     pub fn all() -> [(Self, Self, Self); 3] {
         [
-            // FIXME Below needs shifted right 6
             (
-                Permission(PermissionMask::Read),
-                Permission(PermissionMask::Write),
-                Permission(PermissionMask::Exec),
-            ),
-            // FIXME Below needs shifted right 3
-            (
-                Permission(PermissionMask::Read),
-                Permission(PermissionMask::Write),
-                Permission(PermissionMask::Exec),
+                Permission((Permissions::Read as u32) << Self::USER_SHIFT),
+                Permission((Permissions::Write as u32) << Self::USER_SHIFT),
+                Permission((Permissions::Exec as u32) << Self::USER_SHIFT),
             ),
             (
-                Permission(PermissionMask::Read),
-                Permission(PermissionMask::Write),
-                Permission(PermissionMask::Exec),
+                Permission((Permissions::Read as u32) << Self::GROUP_SHIFT),
+                Permission((Permissions::Write as u32) << Self::GROUP_SHIFT),
+                Permission((Permissions::Exec as u32) << Self::GROUP_SHIFT),
+            ),
+            (
+                Permission((Permissions::Read as u32) << Self::OTHER_SHIFT),
+                Permission((Permissions::Write as u32) << Self::OTHER_SHIFT),
+                Permission((Permissions::Exec as u32) << Self::OTHER_SHIFT),
             ),
         ]
+    }
+}
+
+impl From<Permissions> for Permission {
+    fn from(mask: Permissions) -> Self {
+        Permission(mask as u32)
     }
 }
 
 impl Display for Permission {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self.0 {
-            PermissionMask::Exec => EXEC_CHAR,
-            PermissionMask::Write => WRITE_CHAR,
-            PermissionMask::Read => READ_CHAR,
-            PermissionMask::Unset => '-',
+            x if x == Permissions::Read as u32 => 'r',
+            x if x == Permissions::Write as u32 => 'w',
+            x if x == Permissions::Exec as u32 => 'x',
+            _ => '-',
         };
         write!(f, "{ch}")
     }
@@ -51,19 +61,19 @@ impl Display for Permission {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub enum SpecialBits {
-    Unset = 0,
-    Sticky = 0x0200,
-    SetGID = 0x0400,
-    SetUID = 0x0800,
+    _Unset = 0,
+    _Sticky = 0x0200,
+    _SetGID = 0x0400,
+    _SetUID = 0x0800,
 }
 
 impl Display for SpecialBits {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self {
-            Self::Unset => '-',
-            Self::Sticky => 't',
-            Self::SetGID => 's',
-            Self::SetUID => 's',
+            Self::_Unset => '-',
+            Self::_Sticky => 't',
+            Self::_SetGID => 's',
+            Self::_SetUID => 's',
         };
         write!(f, "{ch}")
     }
