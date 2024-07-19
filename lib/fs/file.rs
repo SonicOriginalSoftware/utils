@@ -11,7 +11,7 @@ use uzers::{get_group_by_gid, get_user_by_uid};
 
 use crate::{
     error::Error,
-    fs::{kind::Kind, mode::Mode, permissions::Permission, size::Size},
+    fs::{kind::Kind, mode::Mode, size::Size},
 };
 
 #[derive(Debug)]
@@ -36,7 +36,7 @@ impl File {
 
         let mode = Mode(metadata.mode());
         let size = Size(metadata.size());
-        let kind = Kind::try_from(mode)?;
+        let kind = mode.file_type();
 
         Ok(Self {
             name,
@@ -74,7 +74,7 @@ impl Display for File {
             }
         } else if (self.kind == Kind::Dir) && is_terminal {
             &format!("\x1b[34m{}\x1b[0m", self.name)
-        } else if self.mode & Permission::Exec != Permission::Exec && is_terminal {
+        } else if self.mode.is_executable() && is_terminal {
             &format!("\x1b[35m{}\x1b[0m", self.name)
         } else {
             &self.name

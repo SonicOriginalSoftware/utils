@@ -1,11 +1,5 @@
 use std::fmt::Display;
 
-use crate::{error::Error, fs::mode::Mode};
-
-pub struct FileTypeMask(pub u32);
-
-const FILE_TYPE_MASK: FileTypeMask = FileTypeMask(0xF000);
-
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Kind {
     Unset = 0,
@@ -17,13 +11,6 @@ pub enum Kind {
     Link = 0xA000,
     Sock = 0xC000,
     Exec = 0x49,
-}
-
-impl TryFrom<Mode> for Kind {
-    type Error = Error<'static>;
-    fn try_from(mode: Mode) -> Result<Self, Self::Error> {
-        Ok(mode & FILE_TYPE_MASK)
-    }
 }
 
 impl Display for Kind {
