@@ -1,45 +1,27 @@
-use std::{
-    fmt::Display,
-    ops::{BitAnd, Shr},
-};
+use std::fmt::Display;
 
-pub enum Permissions {
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub enum Permission {
+    Unset = 0,
     Exec = 0x0040,
     Write = 0x0080,
     Read = 0x0100,
+    Sticky = 0x0200,
+    SetGID = 0x0400,
+    SetUID = 0x0800,
 }
 
-impl Display for Permissions {
+impl Display for Permission {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self {
-            Self::Exec => 'x',
-            Self::Write => 'w',
+            Self::Unset => '-',
             Self::Read => 'r',
+            Self::Write => 'w',
+            Self::Exec => 'x',
+            Self::Sticky => 't',
+            Self::SetGID => 's',
+            Self::SetUID => 's',
         };
         write!(f, "{}", ch)
-    }
-}
-
-impl Shr<u32> for Permissions {
-    type Output = Self;
-
-    fn shr(self, rhs: u32) -> Self::Output {
-        match self {
-            Self::Exec => Self::Exec >> rhs,
-            Self::Write => Self::Write >> rhs,
-            Self::Read => Self::Read >> rhs,
-        }
-    }
-}
-
-impl BitAnd<u32> for Permissions {
-    type Output = u32;
-
-    fn bitand(self, rhs: u32) -> Self::Output {
-        match self {
-            Self::Exec => Self::Exec as u32 & rhs,
-            Self::Write => Self::Write as u32 & rhs,
-            Self::Read => Self::Read as u32 & rhs,
-        }
     }
 }

@@ -11,7 +11,7 @@ use uzers::{get_group_by_gid, get_user_by_uid};
 
 use crate::{
     error::Error,
-    fs::{kind::Kind, mode::Mode, permissions::Permissions, size::Size},
+    fs::{kind::Kind, mode::Mode, permissions::Permission, size::Size},
 };
 
 #[derive(Debug)]
@@ -74,7 +74,7 @@ impl Display for File {
             }
         } else if (self.kind == Kind::Dir) && is_terminal {
             &format!("\x1b[34m{}\x1b[0m", self.name)
-        } else if self.mode & Permissions::Exec != 0 && is_terminal {
+        } else if self.mode & Permission::Exec != Permission::Exec && is_terminal {
             &format!("\x1b[35m{}\x1b[0m", self.name)
         } else {
             &self.name

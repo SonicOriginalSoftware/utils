@@ -1,11 +1,14 @@
-use std::{fmt::Display, ops::BitAnd};
+use std::fmt::Display;
 
 use crate::{error::Error, fs::mode::Mode};
 
-pub const FILE_TYPE_MASK: u32 = 0xF000;
+pub struct FileTypeMask(pub u32);
+
+const FILE_TYPE_MASK: FileTypeMask = FileTypeMask(0xF000);
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Kind {
+    Unset = 0,
     Pipe = 0x1000,
     Char = 0x2000,
     Dir = 0x4000,
@@ -18,18 +21,8 @@ pub enum Kind {
 
 impl TryFrom<Mode> for Kind {
     type Error = Error<'static>;
-
-    fn try_from(value: Mode) -> Result<Self, Self::Error> {
-        match value & FILE_TYPE_MASK {
-            x if x == Self::Pipe as u32 => Ok(Self::Pipe),
-            x if x == Self::Char as u32 => Ok(Self::Char),
-            x if x == Self::Dir as u32 => Ok(Self::Dir),
-            x if x == Self::Block as u32 => Ok(Self::Block),
-            x if x == Self::File as u32 => Ok(Self::File),
-            x if x == Self::Link as u32 => Ok(Self::Link),
-            x if x == Self::Sock as u32 => Ok(Self::Sock),
-            _ => Err(Error::Str("Invalid value for FileType")),
-        }
+    fn try_from(mode: Mode) -> Result<Self, Self::Error> {
+        Ok(mode & FILE_TYPE_MASK)
     }
 }
 
@@ -46,22 +39,5 @@ impl Display for Kind {
             _ => '?',
         };
         write!(f, "{}", ch)
-    }
-}
-
-impl BitAnd<Kind> for Kind {
-    type Output = u32;
-
-    fn bitand(self, rhs: Kind) -> Self::Output {
-        match self {
-            Self::Pipe => Self::Pipe as u32 & rhs as u32,
-            Self::Char => Self::Char as u32 & rhs as u32,
-            Self::Dir => Self::Dir as u32 & rhs as u32,
-            Self::Block => Self::Block as u32 & rhs as u32,
-            Self::File => Self::File as u32 & rhs as u32,
-            Self::Link => Self::Link as u32 & rhs as u32,
-            Self::Sock => Self::Sock as u32 & rhs as u32,
-            Self::Exec => Self::Exec as u32 & rhs as u32,
-        }
     }
 }
