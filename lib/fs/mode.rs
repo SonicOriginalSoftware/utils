@@ -5,12 +5,6 @@ use crate::fs::permissions::Permissions;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Mode(pub u32);
 
-impl From<u32> for Mode {
-    fn from(value: u32) -> Self {
-        Self(value)
-    }
-}
-
 impl Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // let permission_bits = [
@@ -56,7 +50,7 @@ impl BitAnd<Permissions> for Mode {
     }
 }
 
-pub enum SpecialBit {
+pub enum _SpecialBit {
     Sticky = 0x0200,
     SetGID = 0x0400,
     SetUID = 0x0800,

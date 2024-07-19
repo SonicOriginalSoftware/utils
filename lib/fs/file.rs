@@ -1,12 +1,10 @@
 use std::{
-    borrow::Cow,
     cmp::Ordering,
-    ffi::OsString,
     fmt::Display,
-    fs::DirEntry,
+    fs::{read_link, DirEntry},
     io::{stdout, IsTerminal},
     os::unix::fs::MetadataExt,
-    path::{absolute, PathBuf},
+    path::PathBuf,
 };
 
 use uzers::{get_group_by_gid, get_user_by_uid};
@@ -18,28 +16,27 @@ use crate::{
 
 #[derive(Debug)]
 pub struct File {
-    pub name: OsString,
+    pub name: String,
+    pub path: PathBuf,
     pub mode: Mode,
     pub size: Size,
     pub kind: Kind,
     pub uid: u32,
     pub gid: u32,
-    pub path: PathBuf,
 }
 
 impl File {
-    pub fn new(entry: &DirEntry) -> Result<Self, Error> {
-        let name = entry.file_name();
+    pub fn new(entry: DirEntry) -> Result<Self, Error<'static>> {
+        let path = entry.path();
+        let name = match path.file_name() {
+            Some(p) => p.to_string_lossy().to_string(),
+            None => return Err(Error::Str("Could not parse file name")),
+        };
         let metadata = entry.metadata()?;
 
         let mode = Mode(metadata.mode());
         let size = Size(metadata.size());
         let kind = Kind::try_from(mode)?;
-
-        let path = match absolute(entry.path()) {
-            Ok(p) => p,
-            Err(e) => return Err(Error::IO(e)),
-        };
 
         Ok(Self {
             name,
@@ -65,20 +62,27 @@ impl Display for File {
         };
 
         let is_terminal = stdout().is_terminal();
-        let lossy_name: Cow<str> = self.name.to_string_lossy();
-        let lossy_name = if self.kind == Kind::Link {
-            format!("{:<20} -> {}", lossy_name, self.path.to_string_lossy()).into()
+        let name = if self.kind == Kind::Link {
+            let resolved_path = match read_link(&self.path) {
+                Ok(p) => p.display().to_string(),
+                Err(_e) => return Err(std::fmt::Error),
+            };
+            if is_terminal {
+                &format!("\x1b[36m{:<20}\x1b[0m -> {}", self.path.display(), resolved_path)
+            } else {
+                &format!("{:<20} -> {}", self.path.display(), resolved_path)
+            }
         } else if (self.kind == Kind::Dir) && is_terminal {
-            format!("\x1b[34m{}\x1b[0m", lossy_name).into()
+            &format!("\x1b[34m{}\x1b[0m", self.name)
         } else if self.mode & Permissions::Exec != 0 && is_terminal {
-            format!("\x1b[35m{}\x1b[0m", lossy_name).into()
+            &format!("\x1b[35m{}\x1b[0m", self.name)
         } else {
-            lossy_name
+            &self.name
         };
 
         write!(
             f,
-            "{kind}{mode} {size} {user:^8} {group:^8} {lossy_name}",
+            "{kind}{mode} {size} {user:^8} {group:^8} {name}",
             size = self.size,
             kind = self.kind,
             mode = self.mode,
@@ -95,7 +99,6 @@ impl PartialEq for File {
             && self.size == other.size
             && self.uid == other.uid
             && self.gid == other.gid
-            && self.name == other.name
             && self.path == other.path
     }
 }
@@ -113,8 +116,11 @@ impl Ord for File {
         let file_type_ordering = self.kind.cmp(&other.kind);
 
         if file_type_ordering == Ordering::Equal {
-            self.name.to_ascii_lowercase().cmp(&other.name.to_ascii_lowercase())
-            // self.name.cmp(&other.name)
+            self.path
+                .display()
+                .to_string()
+                .to_ascii_lowercase()
+                .cmp(&other.path.display().to_string().to_ascii_lowercase())
         } else {
             file_type_ordering
         }

@@ -12,9 +12,9 @@ pub enum Permissions {
 impl Display for Permissions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self {
-            Permissions::Exec => 'x',
-            Permissions::Write => 'w',
-            Permissions::Read => 'r',
+            Self::Exec => 'x',
+            Self::Write => 'w',
+            Self::Read => 'r',
         };
         write!(f, "{}", ch)
     }
@@ -37,9 +37,9 @@ impl BitAnd<u32> for Permissions {
 
     fn bitand(self, rhs: u32) -> Self::Output {
         match self {
-            Permissions::Exec => Permissions::Exec as u32 & rhs,
-            Permissions::Write => Permissions::Write as u32 & rhs,
-            Permissions::Read => Permissions::Read as u32 & rhs,
+            Self::Exec => Self::Exec as u32 & rhs,
+            Self::Write => Self::Write as u32 & rhs,
+            Self::Read => Self::Read as u32 & rhs,
         }
     }
 }
