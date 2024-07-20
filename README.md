@@ -41,7 +41,7 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 
 - ...and probably more to come!
 
-<br>
+## Notes
 
 Overall, we want to keep the names of commands as conventional as possible.
 
