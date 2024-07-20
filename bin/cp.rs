@@ -1,17 +1,6 @@
-use std::process::ExitCode;
-
-use lib::mv::Op;
-
-fn main() -> ExitCode {
-    let command_name = "cp";
-    match lib::mv::run(Op::Copy) {
-        Ok((source, target)) => {
-            println!("{}: Copied '{}' to '{}'", command_name, source, target);
-            ExitCode::SUCCESS
-        }
-        Err(err) => {
-            eprintln!("{}: {}", command_name, err);
-            ExitCode::FAILURE
-        }
+fn main() -> Result<(), lib::error::Error> {
+    match lib::mv::run(lib::mv::Op::Copy) {
+        Ok((source, target)) => Ok(println!("Copied '{}' to '{}'", source, target)),
+        Err(e) => Err(e),
     }
 }

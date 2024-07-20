@@ -1,7 +1,6 @@
-use std::env::args;
-
-use lib::{error::Error, stat};
-
-fn main() -> Result<(), Error> {
-    Ok(println!("{}", stat::run(args().collect::<Vec<String>>())?))
+fn main() -> Result<(), lib::error::Error> {
+    Ok(println!(
+        "{}",
+        lib::stat::run(std::env::args().collect::<Vec<String>>())?
+    ))
 }
