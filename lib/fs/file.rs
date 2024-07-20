@@ -1,7 +1,7 @@
 use std::{
     cmp::Ordering,
     fmt::Display,
-    fs::{read_link, DirEntry},
+    fs::{read_link, symlink_metadata},
     io::{stdout, IsTerminal},
     os::unix::fs::MetadataExt,
     path::PathBuf,
@@ -16,51 +16,65 @@ use crate::{
 
 #[derive(Debug)]
 pub struct File {
-    pub name: String,
-    pub path: PathBuf,
-    pub mode: Mode,
-    pub size: Size,
-    pub uid: u32,
-    pub gid: u32,
+    name: String,
+    path: PathBuf,
+    mode: Mode,
+    size: Size,
+    kind: Kind,
+    // uid: u32,
+    // gid: u32,
+    user: String,
+    group: String,
 }
 
-impl File {
-    pub fn new(entry: DirEntry) -> Result<Self, Error<'static>> {
-        let path = entry.path();
+impl File {}
+
+impl TryFrom<PathBuf> for File {
+    type Error = Error;
+
+    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
+        let md = match symlink_metadata(path.clone()) {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("{p} - {e}", p = path.display());
+                return Err(Error::IO(e));
+            }
+        };
+        let uid = md.uid();
+        let gid = md.gid();
+        let size = Size(md.size());
+        let mode = Mode(md.mode());
+        let kind = mode.file_type();
+
         let name = match path.file_name() {
             Some(p) => p.to_string_lossy().to_string(),
-            None => return Err(Error::Str("Could not parse file name")),
+            None => path.display().to_string(),
         };
-        let metadata = entry.metadata()?;
-
-        let mode = Mode(metadata.mode());
-        let size = Size(metadata.size());
+        let user = match get_user_by_uid(uid) {
+            Some(p) => p.name().to_string_lossy().to_string(),
+            None => format!("{}", uid),
+        };
+        let group = match get_group_by_gid(gid) {
+            Some(p) => p.name().to_string_lossy().to_string(),
+            None => format!("{}", gid),
+        };
 
         Ok(Self {
             name,
             size,
-            uid: metadata.uid(),
-            gid: metadata.gid(),
             path,
             mode,
+            kind,
+            user,
+            group,
         })
     }
 }
 
 impl Display for File {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let user = match get_user_by_uid(self.uid) {
-            Some(p) => p.name().to_owned(),
-            None => return Err(std::fmt::Error),
-        };
-        let group = match get_group_by_gid(self.gid) {
-            Some(p) => p.name().to_owned(),
-            None => return Err(std::fmt::Error),
-        };
-
         let is_terminal = stdout().is_terminal();
-        let kind = self.mode.file_type();
-        let name = if kind == Kind::Link {
+        let name = if self.kind == Kind::Link {
             let resolved_path = match read_link(&self.path) {
                 Ok(p) => p.display().to_string(),
                 Err(_e) => return Err(std::fmt::Error),
@@ -70,21 +84,30 @@ impl Display for File {
             } else {
                 &format!("{:<20} -> {}", self.name, resolved_path)
             }
-        } else if (kind == Kind::Dir) && is_terminal {
-            &format!("\x1b[34m{}\x1b[0m", self.name)
+        } else if self.mode.is_sticky() && is_terminal {
+            &format!("\x1b[36;44m{}\x1b[0m", self.name)
+        } else if self.mode.is_setgid() && is_terminal {
+            &format!("\x1b[1;37;44m{}\x1b[0m", self.name)
+        } else if self.mode.is_setuid() && is_terminal {
+            &format!("\x1b[1;37;45m{}\x1b[0m", self.name)
         } else if self.mode.is_executable() && is_terminal {
             &format!("\x1b[35m{}\x1b[0m", self.name)
+        } else if (self.kind == Kind::Dir) && is_terminal {
+            &format!("\x1b[34m{}\x1b[0m", self.name)
+        } else if (self.kind == Kind::Sock) && is_terminal {
+            &format!("\x1b[32m{}\x1b[0m", self.name)
         } else {
             &self.name
         };
 
         write!(
             f,
-            "{kind}{mode} {size} {user:^8} {group:^8} {name}",
+            "{kind}{mode} {size} {user:^14} {group:^14} {name}",
+            kind = self.kind,
             size = self.size,
             mode = self.mode,
-            user = user.to_string_lossy(),
-            group = group.to_string_lossy(),
+            user = self.user,
+            group = self.group,
         )
     }
 }
@@ -93,8 +116,8 @@ impl PartialEq for File {
     fn eq(&self, other: &Self) -> bool {
         self.mode == other.mode
             && self.size == other.size
-            && self.uid == other.uid
-            && self.gid == other.gid
+            && self.user == other.user
+            && self.group == other.group
             && self.path == other.path
     }
 }

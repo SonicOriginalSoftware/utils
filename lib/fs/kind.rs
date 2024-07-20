@@ -10,7 +10,6 @@ pub enum Kind {
     File = 0x8000,
     Link = 0xA000,
     Sock = 0xC000,
-    Exec = 0x49,
 }
 
 impl Display for Kind {

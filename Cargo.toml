@@ -23,5 +23,9 @@ path = "bin/ls.rs"
 name = "mv"
 path = "bin/mv.rs"
 
+[[bin]]
+name = "stat"
+path = "bin/stat.rs"
+
 [dependencies]
 uzers = "0.12.0"

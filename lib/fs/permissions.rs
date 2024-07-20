@@ -5,7 +5,7 @@ const GROUP_SHIFT: u32 = 3;
 const OTHER_SHIFT: u32 = 0;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub enum PermissionMask {
+pub enum Permission {
     Unset = 0,
     UserRead = 0b100 << USER_SHIFT,
     UserWrite = 0b010 << USER_SHIFT,
@@ -24,7 +24,7 @@ pub enum PermissionMask {
     UnSetUID = 0x4000,
 }
 
-impl PermissionMask {
+impl Permission {
     const READ_CHAR: char = 'r';
     const WRITE_CHAR: char = 'w';
     const EXEC_CHAR: char = 'x';
@@ -33,7 +33,7 @@ impl PermissionMask {
     const SETUID_CHAR: char = 's';
 }
 
-impl Display for PermissionMask {
+impl Display for Permission {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self {
             Self::Sticky => Self::STICKY_CHAR,
@@ -57,25 +57,25 @@ impl Display for PermissionMask {
     }
 }
 
-impl BitAnd<u32> for PermissionMask {
-    type Output = PermissionMask;
+impl BitAnd<u32> for Permission {
+    type Output = Permission;
 
     fn bitand(self, rhs: u32) -> Self::Output {
         let p = self as u32 & rhs;
         match p {
-            x if x == PermissionMask::Sticky as u32 => PermissionMask::Sticky,
-            x if x == PermissionMask::SetGID as u32 => PermissionMask::SetGID,
-            x if x == PermissionMask::SetUID as u32 => PermissionMask::SetUID,
-            x if x == PermissionMask::UserRead as u32 => PermissionMask::UserRead,
-            x if x == PermissionMask::UserWrite as u32 => PermissionMask::UserWrite,
-            x if x == PermissionMask::UserExec as u32 => PermissionMask::UserExec,
-            x if x == PermissionMask::GroupRead as u32 => PermissionMask::GroupRead,
-            x if x == PermissionMask::GroupWrite as u32 => PermissionMask::GroupWrite,
-            x if x == PermissionMask::GroupExec as u32 => PermissionMask::GroupExec,
-            x if x == PermissionMask::OtherRead as u32 => PermissionMask::OtherRead,
-            x if x == PermissionMask::OtherWrite as u32 => PermissionMask::OtherWrite,
-            x if x == PermissionMask::OtherExec as u32 => PermissionMask::OtherExec,
-            _ => PermissionMask::Unset,
+            x if x == Permission::Sticky as u32 => Permission::Sticky,
+            x if x == Permission::SetGID as u32 => Permission::SetGID,
+            x if x == Permission::SetUID as u32 => Permission::SetUID,
+            x if x == Permission::UserRead as u32 => Permission::UserRead,
+            x if x == Permission::UserWrite as u32 => Permission::UserWrite,
+            x if x == Permission::UserExec as u32 => Permission::UserExec,
+            x if x == Permission::GroupRead as u32 => Permission::GroupRead,
+            x if x == Permission::GroupWrite as u32 => Permission::GroupWrite,
+            x if x == Permission::GroupExec as u32 => Permission::GroupExec,
+            x if x == Permission::OtherRead as u32 => Permission::OtherRead,
+            x if x == Permission::OtherWrite as u32 => Permission::OtherWrite,
+            x if x == Permission::OtherExec as u32 => Permission::OtherExec,
+            _ => Permission::Unset,
         }
     }
 }

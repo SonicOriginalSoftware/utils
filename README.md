@@ -28,6 +28,7 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 - `cp` (**DONE**)
 - `mv` (**DONE**)
 - `ls` (**DONE**)
+- `stat` (**DONE**)
 - `rm` (**ON DECK**)
 - `mkdir`
 - `env` ?

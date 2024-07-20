@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::fs::{kind::Kind, permissions::PermissionMask};
+use crate::fs::{kind::Kind, permissions::Permission};
 
 type FileTypeMask = u32;
 
@@ -16,15 +16,28 @@ impl Mode {
         self.0 & ANY_EXEC_MASK != 0
     }
 
+    pub fn is_setuid(&self) -> bool {
+        Permission::SetUID & self.0 != Permission::Unset
+    }
+
+    pub fn is_setgid(&self) -> bool {
+        Permission::SetGID & self.0 != Permission::Unset
+    }
+
+    pub fn is_sticky(&self) -> bool {
+        Permission::Sticky & self.0 != Permission::Unset
+    }
+
     pub fn file_type(&self) -> Kind {
-        match self.0 & FILE_TYPE_MASK {
+        let ft = self.0 & FILE_TYPE_MASK;
+        match ft {
             x if x == Kind::Block as u32 => Kind::Block,
             x if x == Kind::Char as u32 => Kind::Char,
-            x if x == Kind::Dir as u32 => Kind::Dir,
-            x if x == Kind::File as u32 => Kind::File,
             x if x == Kind::Link as u32 => Kind::Link,
             x if x == Kind::Pipe as u32 => Kind::Pipe,
             x if x == Kind::Sock as u32 => Kind::Sock,
+            x if x == Kind::Dir as u32 => Kind::Dir,
+            x if x == Kind::File as u32 => Kind::File,
             _ => Kind::Unset,
         }
     }
@@ -32,43 +45,43 @@ impl Mode {
 
 impl Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        const PERMISSION_MASKS: [PermissionMask; 9] = [
-            PermissionMask::UserRead,
-            PermissionMask::UserWrite,
-            PermissionMask::UserExec,
-            PermissionMask::GroupRead,
-            PermissionMask::GroupWrite,
-            PermissionMask::GroupExec,
-            PermissionMask::OtherRead,
-            PermissionMask::OtherWrite,
-            PermissionMask::OtherExec,
+        const PERMISSION_MASKS: [Permission; 9] = [
+            Permission::UserRead,
+            Permission::UserWrite,
+            Permission::UserExec,
+            Permission::GroupRead,
+            Permission::GroupWrite,
+            Permission::GroupExec,
+            Permission::OtherRead,
+            Permission::OtherWrite,
+            Permission::OtherExec,
         ];
-        let setuid = PermissionMask::SetUID & self.0 != PermissionMask::Unset;
-        let setgid = PermissionMask::SetGID & self.0 != PermissionMask::Unset;
-        let sticky = PermissionMask::Sticky & self.0 != PermissionMask::Unset;
+        let setuid = self.is_setuid();
+        let setgid = self.is_setgid();
+        let sticky = self.is_sticky();
 
         for (i, &each_mask) in PERMISSION_MASKS.iter().enumerate() {
             let set = each_mask & self.0;
-            let permission: PermissionMask = match i {
+            let permission: Permission = match i {
                 2 if setuid => {
-                    if set != PermissionMask::Unset {
-                        PermissionMask::SetUID
+                    if set != Permission::Unset {
+                        Permission::SetUID
                     } else {
-                        PermissionMask::UnSetUID
+                        Permission::UnSetUID
                     }
                 }
                 5 if setgid => {
-                    if set != PermissionMask::Unset {
-                        PermissionMask::SetGID
+                    if set != Permission::Unset {
+                        Permission::SetGID
                     } else {
-                        PermissionMask::UnSetGID
+                        Permission::UnSetGID
                     }
                 }
                 8 if sticky => {
-                    if set != PermissionMask::Unset {
-                        PermissionMask::Sticky
+                    if set != Permission::Unset {
+                        Permission::Sticky
                     } else {
-                        PermissionMask::UnSticky
+                        Permission::UnSticky
                     }
                 }
                 _ => set,
