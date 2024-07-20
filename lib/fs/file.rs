@@ -66,9 +66,9 @@ impl Display for File {
                 Err(_e) => return Err(std::fmt::Error),
             };
             if is_terminal {
-                &format!("\x1b[36m{:<20}\x1b[0m -> {}", self.path.display(), resolved_path)
+                &format!("\x1b[36m{:<20}\x1b[0m -> {}", self.name, resolved_path)
             } else {
-                &format!("{:<20} -> {}", self.path.display(), resolved_path)
+                &format!("{:<20} -> {}", self.name, resolved_path)
             }
         } else if (kind == Kind::Dir) && is_terminal {
             &format!("\x1b[34m{}\x1b[0m", self.name)
@@ -109,7 +109,7 @@ impl PartialOrd for File {
 
 impl Ord for File {
     fn cmp<'a>(&'a self, other: &'a Self) -> std::cmp::Ordering {
-        let file_type_ordering = self.mode.cmp(&other.mode);
+        let file_type_ordering = self.mode.file_type().cmp(&other.mode.file_type());
 
         if file_type_ordering == Ordering::Equal {
             self.path

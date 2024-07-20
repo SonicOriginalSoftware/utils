@@ -1,9 +1,6 @@
 use std::fmt::Display;
 
-use crate::fs::{
-    kind::Kind,
-    permissions::{Permission, PermissionMask, Permissions},
-};
+use crate::fs::{kind::Kind, permissions::PermissionMask};
 
 type FileTypeMask = u32;
 
@@ -31,42 +28,53 @@ impl Mode {
             _ => Kind::Unset,
         }
     }
-
-    fn permission(&self, mask: PermissionMask) -> Permission {
-        let p: Permissions = match self.0 & mask {
-            x if x == Permissions::Read as u32 => Permissions::Read,
-            x if x == Permissions::Write as u32 => Permissions::Write,
-            x if x == Permissions::Exec as u32 => Permissions::Exec,
-            _ => Permissions::Unset,
-        };
-        Permission::from(p)
-    }
 }
 
 impl Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let permission_range = Permission::all();
-        for each in permission_range {
-            let read_permission: Permission = self.permission(each.0.mask());
-            let write_permission: Permission = self.permission(each.1.mask());
-            let execute_permission: Permission = self.permission(each.2.mask());
-            match write!(f, "{read_permission}{write_permission}{execute_permission}") {
-                Ok(p) => p,
-                Err(e) => return Err(e),
-            }
+        const PERMISSION_MASKS: [PermissionMask; 9] = [
+            PermissionMask::UserRead,
+            PermissionMask::UserWrite,
+            PermissionMask::UserExec,
+            PermissionMask::GroupRead,
+            PermissionMask::GroupWrite,
+            PermissionMask::GroupExec,
+            PermissionMask::OtherRead,
+            PermissionMask::OtherWrite,
+            PermissionMask::OtherExec,
+        ];
+        let setuid = PermissionMask::SetUID & self.0 != PermissionMask::Unset;
+        let setgid = PermissionMask::SetGID & self.0 != PermissionMask::Unset;
+        let sticky = PermissionMask::Sticky & self.0 != PermissionMask::Unset;
+
+        for (i, &each_mask) in PERMISSION_MASKS.iter().enumerate() {
+            let set = each_mask & self.0;
+            let permission: PermissionMask = match i {
+                2 if setuid => {
+                    if set != PermissionMask::Unset {
+                        PermissionMask::SetUID
+                    } else {
+                        PermissionMask::UnSetUID
+                    }
+                }
+                5 if setgid => {
+                    if set != PermissionMask::Unset {
+                        PermissionMask::SetGID
+                    } else {
+                        PermissionMask::UnSetGID
+                    }
+                }
+                8 if sticky => {
+                    if set != PermissionMask::Unset {
+                        PermissionMask::Sticky
+                    } else {
+                        PermissionMask::UnSticky
+                    }
+                }
+                _ => set,
+            };
+            write!(f, "{}", permission)?;
         }
         Ok(())
-    }
-}
-
-impl PartialOrd for Mode {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Mode {
-    fn cmp<'a>(&'a self, other: &'a Self) -> std::cmp::Ordering {
-        self.file_type().cmp(&other.file_type())
     }
 }
