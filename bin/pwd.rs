@@ -1,4 +1,4 @@
-fn main() -> Result<(), lib::error::Error> {
+fn main() -> lib::Return {
     match lib::pwd::run() {
         Ok(p) => Ok(println!("{}", p)),
         Err(e) => Err(e),

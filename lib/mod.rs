@@ -7,3 +7,5 @@ pub mod pwd;
 pub mod stat;
 
 mod tests;
+
+pub type Return = Result<(), error::Error>;
