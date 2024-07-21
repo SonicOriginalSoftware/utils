@@ -1,5 +1,3 @@
-use std::env::args;
-
 use crate::error::Error;
 
 pub enum Op {
@@ -7,9 +5,7 @@ pub enum Op {
     Copy,
 }
 
-pub fn run(op: Op) -> Result<(String, String), Error> {
-    let args = args().collect::<Vec<String>>();
-
+pub fn run(args: Vec<String>, op: Op) -> Result<(String, String), Error> {
     let source = match args.get(1) {
         Some(p) => p,
         None => return Err(Error::Str("No source given")),

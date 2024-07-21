@@ -25,12 +25,25 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 ## Commands
 
 - `pwd` (**DONE**)
-- `cp` (**DONE**)
-- `mv` (**DONE**)
+- `cp`
+  - files: (**DONE**)
+  - directories:
+- `mv`
+  - files: (**DONE**)
+  - directories:
 - `ls` (**DONE**)
 - `stat` (**DONE**)
-- `mkdir` (**ON DECK**)
+- `touch` (**DONE**)
 - `rm` (**ON DECK**)
+- `mkdir`
+- `rmdir`
+- `chown`
+- `chmod`
+- `df`
+- `du`
+- `type` ?
+- `command`/`\` ?
+- `ping` ?
 - `env` ?
 - `cat` ?
 - `sh`

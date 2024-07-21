@@ -5,7 +5,8 @@ pub mod ls;
 pub mod mv;
 pub mod pwd;
 pub mod stat;
+pub mod touch;
 
 mod tests;
 
-pub type Return = Result<(), error::Error>;
+pub type Return = error::Error;
