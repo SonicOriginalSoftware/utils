@@ -27,25 +27,26 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 - `pwd` (**DONE**)
 - `cp`
   - files: (**DONE**)
-  - directories:
+  - directories: (**NOPE**)
 - `mv`
   - files: (**DONE**)
-  - directories:
+  - directories: (**NOPE**)
 - `ls` (**DONE**)
 - `stat` (**DONE**)
 - `touch` (**DONE**)
-- `rm` (**ON DECK**)
-- `mkdir`
-- `rmdir`
-- `chown`
-- `chmod`
+- `rm` (**DONE**)
+- `mkdir` (**DONE**)
+- `rmdir` (**DONE**)
+- `co` (`chown`)
+- `cm` (`chmod`)
+- `sl` ((soft) `link`)
 - `df`
 - `du`
+- `env` ?
+- `cat` ?
 - `type` ?
 - `command`/`\` ?
 - `ping` ?
-- `env` ?
-- `cat` ?
 - `sh`
   - `.`
   - `cd`
@@ -54,18 +55,14 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 
 - ...and probably more to come!
 
-## Notes
-
-Overall, we want to keep the names of commands as conventional as possible.
-
-In keeping with simplicity, oftentimes that means accepting that
-
-1) muscle-memory is a thing
-1) two-, three-, somtimes five-letter commands are exceedingly easy to remember
-1) two-, three-, somtimes five-letter commands are exceedingly easy to punch
-into a prompt
-
 ## What SOSIX Utils is *NOT*
+
+Overall, we want to keep the names of commands where possible. But SOSIX is not trying to be POSIX.
+The primary goal is usability and intuitive behavior. No surprises. If you type in a command to
+`rmdir` - its going to remove that directory, no questions or options asked.
+
+In keeping with simplicity, oftentimes that means accepting that two-, three-, somtimes five-letter
+commands are exceedingly easy to remember.
 
 This won't be an attempt at porting all POSIX commands. There are over a
 hundred POSIX-defined standard commands. Around 10 of them are used multiple

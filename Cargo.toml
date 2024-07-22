@@ -20,8 +20,20 @@ name = "ls"
 path = "bin/ls.rs"
 
 [[bin]]
+name = "mkdir"
+path = "bin/mkdir.rs"
+
+[[bin]]
 name = "mv"
 path = "bin/mv.rs"
+
+[[bin]]
+name = "rm"
+path = "bin/rm.rs"
+
+[[bin]]
+name = "rmdir"
+path = "bin/rmdir.rs"
 
 [[bin]]
 name = "stat"

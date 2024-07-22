@@ -11,7 +11,7 @@ pub fn run(args: Vec<String>) -> Result<(String, String), Error> {
         None => return Err(Error::Str("No destination given")),
     };
 
-    match std::fs::rename(source, target) {
+    match std::fs::copy(source, target) {
         Ok(_) => Ok((source.to_string(), target.to_string())),
         Err(e) => Err(Error::IO(e)),
     }

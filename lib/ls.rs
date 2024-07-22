@@ -19,36 +19,16 @@ pub fn run(args: Vec<String>) -> Result<Vec<File>, Error> {
     };
 
     let target_path = PathBuf::from(target);
-    let target_copy = target_path.clone();
-
-    let md = match symlink_metadata(target_path) {
-        Ok(p) => p,
-        Err(e) => return Err(Error::IO(e)),
-    };
-    let ki = Mode(md.mode()).file_type();
 
     let mut entries: Vec<File> = Vec::<File>::new();
-    match ki {
+    match Mode(symlink_metadata(&target_path)?.mode()).file_type() {
         crate::fs::kind::Kind::Dir => {
-            let dirs = match read_dir(target) {
-                Ok(p) => p,
-                Err(e) => return Err(Error::IO(e)),
-            };
-
-            for each_result_entry in dirs {
-                let path = match each_result_entry {
-                    Ok(p) => p.path(),
-                    Err(e) => return Err(Error::IO(e)),
-                };
-                let file = match File::try_from(path) {
-                    Ok(p) => p,
-                    Err(e) => return Err(e),
-                };
-                entries.push(file)
+            for each_result_entry in read_dir(target)? {
+                entries.push(File::try_from(each_result_entry?.path())?)
             }
         }
         _ => {
-            let file = match File::try_from(target_copy) {
+            let file = match File::try_from(target_path) {
                 Ok(p) => p,
                 Err(e) => return Err(e),
             };

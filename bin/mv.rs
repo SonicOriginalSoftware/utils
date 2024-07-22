@@ -1,5 +1,5 @@
 fn main() -> lib::Return {
-    match lib::mv::run(std::env::args().collect::<Vec<String>>(), lib::mv::Op::Move) {
+    match lib::mv::run(std::env::args().collect::<Vec<String>>()) {
         Ok((source, target)) => println!("Moved '{}' to '{}'", source, target),
         Err(e) => return e,
     }
