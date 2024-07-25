@@ -26,18 +26,29 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
 
 - `pwd` (**DONE**)
 - `cp`
-  - files: (**DONE**)
-  - directories: (**NOPE**)
+  - files
+    - `cp ${source_file} ${destination_file}` (**DONE**)
+    - `cp ${source_file} ${destination_folder}`
+  - directories
+    - `cp ${source_folder} ${destination_folder}`
 - `mv`
-  - files: (**DONE**)
-  - directories: (**NOPE**)
+  - files
+    - `mv ${source_file} ${destination_file}` (**DONE**)
+    - `mv ${source_file} ${destination_folder}`
+  - directories
+    - `mv ${source_folder} ${destination_folder}`
 - `ls` (**DONE**)
 - `stat` (**DONE**)
 - `touch` (**DONE**)
 - `rm` (**DONE**)
 - `mkdir` (**DONE**)
 - `rmdir` (**DONE**)
-- `co` (`chown`)
+- `trash`
+  - `macos` (**DONE**)
+    - Ugly because Apple can't figure out how to move items to the user's trash bin
+  - `windows`
+  - `linux`
+- `co` (`chown`) (**DONE**)
 - `cm` (`chmod`)
 - `sl` ((soft) `link`)
 - `df`

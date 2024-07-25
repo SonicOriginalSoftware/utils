@@ -14,6 +14,16 @@ pub mod rename_file;
 pub mod show;
 pub mod show_file;
 
+#[cfg(target_os = "macos")]
+#[path = "macos/mod.rs"]
+mod platform;
+#[cfg(target_os = "linux")]
+mod platform;
+#[cfg(target_os = "windows")]
+mod platform;
+
+pub use platform::*;
+
 mod tests;
 
 pub type Return = error::Error;

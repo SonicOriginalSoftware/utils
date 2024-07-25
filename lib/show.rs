@@ -1,13 +1,6 @@
-use std::{
-    fs::{read_dir, symlink_metadata},
-    os::unix::fs::MetadataExt,
-    path::PathBuf,
-};
+use std::{fs::read_dir, path::PathBuf};
 
-use crate::{
-    error::Error,
-    fs::{file::File, mode::Mode},
-};
+use crate::{error::Error, fs::file::File};
 
 pub fn run(args: Vec<String>) -> Result<Vec<File>, Error> {
     let target = match args.get(1) {
@@ -18,22 +11,17 @@ pub fn run(args: Vec<String>) -> Result<Vec<File>, Error> {
         },
     };
 
-    let target_path = PathBuf::from(target);
-
     let mut entries: Vec<File> = Vec::<File>::new();
-    match Mode(symlink_metadata(&target_path)?.mode()).file_type() {
-        crate::fs::kind::Kind::Dir => {
-            for each_result_entry in read_dir(target)? {
-                entries.push(File::try_from(each_result_entry?.path())?)
-            }
+    let file = match File::try_from(PathBuf::from(target)) {
+        Ok(p) => p,
+        Err(e) => return Err(e),
+    };
+    if let crate::fs::kind::Kind::Dir = file.kind {
+        for each_result_entry in read_dir(target)? {
+            entries.push(File::try_from(each_result_entry?.path())?)
         }
-        _ => {
-            let file = match File::try_from(target_path) {
-                Ok(p) => p,
-                Err(e) => return Err(e),
-            };
-            entries.push(file)
-        }
+    } else {
+        entries.push(file);
     }
 
     entries.sort();

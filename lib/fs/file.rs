@@ -20,7 +20,7 @@ pub struct File {
     path: PathBuf,
     mode: Mode,
     size: Size,
-    kind: Kind,
+    pub kind: Kind,
     // uid: u32,
     // gid: u32,
     user: String,
