@@ -2,17 +2,17 @@ mod fs;
 
 pub mod error;
 
-pub mod cm;
-pub mod co;
-pub mod cp;
-pub mod ls;
-pub mod mkdir;
-pub mod mv;
-pub mod pwd;
-pub mod rm;
-pub mod rmdir;
-pub mod stat;
-pub mod touch;
+pub mod change_mode;
+pub mod change_ownership;
+pub mod copy;
+pub mod create_directory;
+pub mod create_file;
+pub mod current_directory;
+pub mod remove_directory;
+pub mod remove_file;
+pub mod rename_file;
+pub mod show;
+pub mod show_file;
 
 mod tests;
 

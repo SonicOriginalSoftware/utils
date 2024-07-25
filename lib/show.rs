@@ -12,7 +12,7 @@ use crate::{
 pub fn run(args: Vec<String>) -> Result<Vec<File>, Error> {
     let target = match args.get(1) {
         Some(p) => p,
-        None => &match crate::pwd::run() {
+        None => &match crate::current_directory::run() {
             Ok(p) => p,
             Err(e) => return Err(e),
         },

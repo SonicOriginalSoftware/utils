@@ -1,7 +1,7 @@
 #[cfg(test)]
 #[test]
 fn test_stat() {
-    match crate::stat::run(vec![String::from(""), String::from("/")]) {
+    match crate::show_file::run(vec![String::from(""), String::from("/")]) {
         Ok(p) => println!("{}", p),
         Err(e) => eprintln!("{}", e),
     }
@@ -9,7 +9,7 @@ fn test_stat() {
 
 #[test]
 fn test_ls() {
-    let entries = match crate::ls::run(vec![String::from(""), String::from("/")]) {
+    let entries = match crate::show::run(vec![String::from(""), String::from("/")]) {
         Ok(p) => p,
         Err(e) => return eprintln!("{}", e),
     };

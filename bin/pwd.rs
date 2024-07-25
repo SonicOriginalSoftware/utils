@@ -1,5 +1,5 @@
 fn main() -> lib::Return {
-    match lib::pwd::run() {
+    match lib::current_directory::run() {
         Ok(p) => println!("{}", p),
         Err(e) => return e,
     };
