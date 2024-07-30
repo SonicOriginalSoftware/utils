@@ -9,7 +9,7 @@ fn test_stat() {
 
 #[test]
 fn test_ls() {
-    let entries = match crate::show::run(vec![String::from(""), String::from("/")]) {
+    let entries = match crate::show_directory::run(vec![String::from(""), String::from("/")]) {
         Ok(p) => p,
         Err(e) => return eprintln!("{}", e),
     };

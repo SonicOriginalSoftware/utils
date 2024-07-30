@@ -49,11 +49,11 @@ Heck the implementation for most of the commands hardly exceeds 50 lines!
   - `windows`
   - `linux`
 - `co` (`chown`) (**DONE**)
+- `env`
 - `cm` (`chmod`)
 - `sl` ((soft) `link`)
 - `df`
 - `du`
-- `env` ?
 - `cat` ?
 - `type` ?
 - `command`/`\` ?

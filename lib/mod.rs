@@ -11,7 +11,8 @@ pub mod current_directory;
 pub mod remove_directory;
 pub mod remove_file;
 pub mod rename_file;
-pub mod show;
+pub mod show_directory;
+pub mod show_env;
 pub mod show_file;
 
 #[cfg(target_os = "macos")]

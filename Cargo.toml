@@ -12,6 +12,10 @@ name = "pwd"
 path = "bin/pwd.rs"
 
 [[bin]]
+name = "env"
+path = "bin/env.rs"
+
+[[bin]]
 name = "cp"
 path = "bin/cp.rs"
 
