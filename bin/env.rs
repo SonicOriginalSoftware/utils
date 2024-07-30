@@ -1,7 +1,4 @@
 fn main() -> lib::Return {
-    match lib::show_env::run() {
-        Ok(p) => println!("{}", p),
-        Err(e) => return e,
-    };
+    println!("{}", lib::env::Vars(std::env::vars().collect()));
     lib::error::Error::None
 }
