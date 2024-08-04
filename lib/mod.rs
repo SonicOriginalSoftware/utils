@@ -9,6 +9,7 @@ pub mod create_directory;
 pub mod create_file;
 pub mod current_directory;
 pub mod env;
+pub mod read;
 pub mod remove_directory;
 pub mod remove_file;
 pub mod rename_file;
