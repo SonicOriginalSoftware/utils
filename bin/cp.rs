@@ -1,7 +1,10 @@
+use std::env::args;
+
+use lib::copy::run;
+
 fn main() -> lib::Return {
-    match lib::copy::run(std::env::args().collect::<Vec<String>>()) {
-        Ok((source, target)) => println!("Copied '{}' to '{}'", source, target),
-        Err(e) => return e,
-    };
+    if let Err(e) = run(args().collect::<Vec<String>>()) {
+        return e;
+    }
     lib::error::Error::None
 }

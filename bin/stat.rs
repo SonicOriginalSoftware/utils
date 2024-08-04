@@ -1,7 +1,13 @@
+use std::env::args;
+
+use lib::show_file::run;
+
 fn main() -> lib::Return {
-    match lib::show_file::run(std::env::args().collect::<Vec<String>>()) {
-        Ok(p) => println!("{}", p),
-        Err(e) => return e,
+    match run(args().collect::<Vec<String>>()) {
+        Ok(p) => {
+            println!("{}", p);
+            lib::error::Error::None
+        }
+        Err(e) => e,
     }
-    lib::error::Error::None
 }

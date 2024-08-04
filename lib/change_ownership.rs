@@ -3,7 +3,12 @@ use crate::error::Error;
 use uzers::{get_group_by_name, get_user_by_name};
 
 pub fn run(args: Vec<String>) -> Result<(), Error> {
-    let ownership = match args.get(1) {
+    let target = match args.get(1) {
+        Some(p) => p,
+        None => return Err(Error::Str("No path passed")),
+    };
+
+    let ownership = match args.get(2) {
         Some(p) => p,
         None => return Err(Error::Str("No ownership passed")),
     };
@@ -28,11 +33,6 @@ pub fn run(args: Vec<String>) -> Result<(), Error> {
             "Unable to parse owner and/or group: '{user}:{group}'"
         )));
     }
-
-    let target = match args.get(2) {
-        Some(p) => p,
-        None => return Err(Error::Str("No path passed")),
-    };
 
     match std::os::unix::fs::chown(target, uid, gid) {
         Ok(_p) => Ok(()),

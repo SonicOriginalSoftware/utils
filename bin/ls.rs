@@ -1,5 +1,9 @@
+use std::env::args;
+
+use lib::show_directory::run;
+
 fn main() -> lib::Return {
-    let entries = match lib::show_directory::run(std::env::args().collect::<Vec<String>>()) {
+    let entries = match run(args().collect::<Vec<String>>()) {
         Ok(p) => p,
         Err(e) => return e,
     };

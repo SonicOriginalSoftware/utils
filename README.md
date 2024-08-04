@@ -120,14 +120,14 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 - [ ] `df`
 - [ ] `du`
 - [ ] `cat` ?
-- [ ] `type` ?
-- [ ] `command`/`\` ?
 - [ ] `ping` ?
 - [ ] `sh`
   - [ ] `.`
+  - [ ] `command`/`\` ?
   - [ ] `cd`
   - [ ] `echo`
   - [ ] `exit`
+  - [ ] `type` ?
 
 - ...and probably more to come!
 

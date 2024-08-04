@@ -1,7 +1,10 @@
+use std::env::args;
+
+use lib::rename_file::run;
+
 fn main() -> lib::Return {
-    match lib::rename_file::run(std::env::args().collect::<Vec<String>>()) {
-        Ok((source, target)) => println!("Moved '{}' to '{}'", source, target),
-        Err(e) => return e,
+    if let Err(e) = run(args().collect::<Vec<String>>()) {
+        return e;
     }
     lib::error::Error::None
 }

@@ -1,6 +1,10 @@
+use std::env::args;
+
+use lib::trash::run;
+
 fn main() -> lib::Return {
-    match lib::trash::run(std::env::args().collect::<Vec<String>>()) {
-        Ok(_) => lib::error::Error::None,
-        Err(e) => e,
+    if let Err(e) = run(args().collect::<Vec<String>>()) {
+        return e;
     }
+    lib::error::Error::None
 }

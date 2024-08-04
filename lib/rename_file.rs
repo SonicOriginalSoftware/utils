@@ -1,6 +1,6 @@
 use crate::error::Error;
 
-pub fn run(args: Vec<String>) -> Result<(String, String), Error> {
+pub fn run(args: Vec<String>) -> Result<(), Error> {
     let source = match args.get(1) {
         Some(p) => p,
         None => return Err(Error::Str("No source given")),
@@ -12,7 +12,7 @@ pub fn run(args: Vec<String>) -> Result<(String, String), Error> {
     };
 
     match std::fs::rename(source, target) {
-        Ok(_) => Ok((source.to_string(), target.to_string())),
+        Ok(_) => Ok(()),
         Err(e) => Err(Error::IO(e)),
     }
 }

@@ -20,6 +20,10 @@ name = "cp"
 path = "bin/cp.rs"
 
 [[bin]]
+name = "cm"
+path = "bin/cm.rs"
+
+[[bin]]
 name = "co"
 path = "bin/co.rs"
 
