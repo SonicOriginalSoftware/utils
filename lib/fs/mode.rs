@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::fs::{kind::Kind, permissions::Permission};
+use crate::fs::{
+    kind::Kind,
+    permissions::{Permission, PermissionMask},
+};
 
 type FileTypeMask = u32;
 
@@ -45,49 +48,13 @@ impl Mode {
 
 impl Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        const PERMISSION_MASKS: [Permission; 9] = [
-            Permission::UserRead,
-            Permission::UserWrite,
-            Permission::UserExec,
-            Permission::GroupRead,
-            Permission::GroupWrite,
-            Permission::GroupExec,
-            Permission::OtherRead,
-            Permission::OtherWrite,
-            Permission::OtherExec,
-        ];
-        let setuid = self.is_setuid();
-        let setgid = self.is_setgid();
-        let sticky = self.is_sticky();
+        write!(f, "{}", PermissionMask::new(self))
+    }
+}
 
-        for (i, &each_mask) in PERMISSION_MASKS.iter().enumerate() {
-            let set = each_mask & self.0;
-            let permission: Permission = match i {
-                2 if setuid => {
-                    if set != Permission::Unset {
-                        Permission::SetUID
-                    } else {
-                        Permission::UnSetUID
-                    }
-                }
-                5 if setgid => {
-                    if set != Permission::Unset {
-                        Permission::SetGID
-                    } else {
-                        Permission::UnSetGID
-                    }
-                }
-                8 if sticky => {
-                    if set != Permission::Unset {
-                        Permission::Sticky
-                    } else {
-                        Permission::UnSticky
-                    }
-                }
-                _ => set,
-            };
-            write!(f, "{}", permission)?;
-        }
-        Ok(())
+impl From<&str> for Mode {
+    fn from(mode: &str) -> Self {
+        let mode = u32::from_str_radix(mode, 8).unwrap_or(0);
+        Self(mode)
     }
 }

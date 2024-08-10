@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops::BitAnd};
 
+use crate::fs::mode::Mode;
+
 const USER_SHIFT: u32 = 6;
 const GROUP_SHIFT: u32 = 3;
 const OTHER_SHIFT: u32 = 0;
@@ -77,5 +79,64 @@ impl BitAnd<u32> for Permission {
             x if x == Permission::OtherExec as u32 => Permission::OtherExec,
             _ => Permission::Unset,
         }
+    }
+}
+
+pub struct PermissionMask<'a>([Permission; 9], &'a Mode);
+
+impl<'a> PermissionMask<'a> {
+    pub const fn new(mode: &'a Mode) -> Self {
+        Self(
+            [
+                Permission::UserRead,
+                Permission::UserWrite,
+                Permission::UserExec,
+                Permission::GroupRead,
+                Permission::GroupWrite,
+                Permission::GroupExec,
+                Permission::OtherRead,
+                Permission::OtherWrite,
+                Permission::OtherExec,
+            ],
+            mode,
+        )
+    }
+}
+
+impl<'a> Display for PermissionMask<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let setuid = self.1.is_setuid();
+        let setgid = self.1.is_setgid();
+        let sticky = self.1.is_sticky();
+
+        for (i, &each_mask) in self.0.iter().enumerate() {
+            let set = each_mask & self.1 .0;
+            let permission: Permission = match i {
+                2 if setuid => {
+                    if set != Permission::Unset {
+                        Permission::SetUID
+                    } else {
+                        Permission::UnSetUID
+                    }
+                }
+                5 if setgid => {
+                    if set != Permission::Unset {
+                        Permission::SetGID
+                    } else {
+                        Permission::UnSetGID
+                    }
+                }
+                8 if sticky => {
+                    if set != Permission::Unset {
+                        Permission::Sticky
+                    } else {
+                        Permission::UnSticky
+                    }
+                }
+                _ => set,
+            };
+            write!(f, "{}", permission)?;
+        }
+        Ok(())
     }
 }
