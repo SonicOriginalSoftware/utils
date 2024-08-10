@@ -63,8 +63,7 @@ impl BitAnd<u32> for Permission {
     type Output = Permission;
 
     fn bitand(self, rhs: u32) -> Self::Output {
-        let p = self as u32 & rhs;
-        match p {
+        match self as u32 & rhs {
             x if x == Permission::Sticky as u32 => Permission::Sticky,
             x if x == Permission::SetGID as u32 => Permission::SetGID,
             x if x == Permission::SetUID as u32 => Permission::SetUID,
@@ -111,22 +110,22 @@ impl<'a> Display for PermissionMask<'a> {
 
         for (i, &each_mask) in self.0.iter().enumerate() {
             let set = each_mask & self.1 .0;
-            let permission: Permission = match i {
-                2 if setuid => {
+            let permission: Permission = match (i, setuid, setgid, sticky) {
+                (2, true, _, _) => {
                     if set != Permission::Unset {
                         Permission::SetUID
                     } else {
                         Permission::UnSetUID
                     }
                 }
-                5 if setgid => {
+                (5, _, true, _) => {
                     if set != Permission::Unset {
                         Permission::SetGID
                     } else {
                         Permission::UnSetGID
                     }
                 }
-                8 if sticky => {
+                (8, _, _, true) => {
                     if set != Permission::Unset {
                         Permission::Sticky
                     } else {
