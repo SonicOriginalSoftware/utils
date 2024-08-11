@@ -43,7 +43,7 @@ impl TryFrom<PathBuf> for File {
         let uid = md.uid();
         let gid = md.gid();
         let size = Size(md.size());
-        let mode = Mode(md.mode());
+        let mode = Mode::new(md.mode());
         let kind = mode.file_type();
 
         let name = match path.file_name() {

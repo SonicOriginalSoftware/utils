@@ -109,7 +109,7 @@ impl<'a> Display for PermissionMask<'a> {
         let sticky = self.1.is_sticky();
 
         for (i, &each_mask) in self.0.iter().enumerate() {
-            let set = each_mask & self.1 .0;
+            let set = each_mask & (u32::from(self.1));
             let permission: Permission = match (i, setuid, setgid, sticky) {
                 (2, true, _, _) => {
                     if set != Permission::Unset {
