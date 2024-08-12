@@ -81,35 +81,38 @@ impl BitAnd<u32> for Permission {
     }
 }
 
-pub struct PermissionMask<'a>([Permission; 9], &'a Mode);
+type Mask = [Permission; 9];
+const MASK: Mask = [
+    Permission::UserRead,
+    Permission::UserWrite,
+    Permission::UserExec,
+    Permission::GroupRead,
+    Permission::GroupWrite,
+    Permission::GroupExec,
+    Permission::OtherRead,
+    Permission::OtherWrite,
+    Permission::OtherExec,
+];
+
+pub struct PermissionMask<'a> {
+    mask: Mask,
+    mode: &'a Mode,
+}
 
 impl<'a> PermissionMask<'a> {
     pub const fn new(mode: &'a Mode) -> Self {
-        Self(
-            [
-                Permission::UserRead,
-                Permission::UserWrite,
-                Permission::UserExec,
-                Permission::GroupRead,
-                Permission::GroupWrite,
-                Permission::GroupExec,
-                Permission::OtherRead,
-                Permission::OtherWrite,
-                Permission::OtherExec,
-            ],
-            mode,
-        )
+        Self { mask: MASK, mode }
     }
 }
 
 impl<'a> Display for PermissionMask<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let setuid = self.1.is_setuid();
-        let setgid = self.1.is_setgid();
-        let sticky = self.1.is_sticky();
+        let setuid = self.mode.is_setuid();
+        let setgid = self.mode.is_setgid();
+        let sticky = self.mode.is_sticky();
 
-        for (i, &each_mask) in self.0.iter().enumerate() {
-            let set = each_mask & (u32::from(self.1));
+        for (i, &each_mask) in self.mask.iter().enumerate() {
+            let set = each_mask & (u32::from(self.mode));
             let permission: Permission = match (i, setuid, setgid, sticky) {
                 (2, true, _, _) => {
                     if set != Permission::Unset {

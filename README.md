@@ -115,7 +115,7 @@ srw-------     0 B      root          daemon     vpncontrol.sock
   - [ ] `linux`
 - [x] `co` (`chown`)
 - [x] `env`
-- [ ] `cm` (`chmod`)
+- [x] `cm` (`chmod`)
 - [ ] `sl` ((soft) `link`)
 - [ ] `df`
 - [ ] `du`
