@@ -1,20 +1,20 @@
-use std::fs::copy;
+use std::os::unix::fs::symlink;
 
 use crate::error::Error;
 
 pub fn run(args: Vec<String>) -> Result<(), Error> {
-    let source = match args.get(1) {
+    let link_origin = match args.get(1) {
         Some(p) => p,
         None => return Err(Error::Str("No source given")),
     };
 
-    let target = match args.get(2) {
+    let link_destination = match args.get(2) {
         Some(p) => p,
         None => return Err(Error::Str("No destination given")),
     };
 
-    match copy(source, target) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(Error::IO(e)),
+    match symlink(link_origin, link_destination) {
+        Ok(p) => Ok(p),
+        Err(err) => Err(Error::IO(err)),
     }
 }

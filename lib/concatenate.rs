@@ -1,4 +1,4 @@
-use std::fs;
+use std::fs::File;
 use std::io::Read;
 
 use crate::error::Error;
@@ -9,7 +9,7 @@ pub fn run(args: Vec<String>) -> Result<String, Error> {
         None => return Err(Error::Str("No path passed")),
     };
 
-    let mut file = match fs::File::open(target) {
+    let mut file = match File::open(target) {
         Ok(p) => p,
         Err(err) => return Err(Error::IO(err)),
     };

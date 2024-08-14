@@ -117,7 +117,7 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 - [x] `env`
 - [x] `cm` (`chmod`)
 - [x] `cat`
-- [ ] `sl` ((soft) `link`)
+- [ ] `ln` ((soft) `link`)
 - [ ] `sh`
   - [ ] `.`
   - [ ] `command`/`\` ?

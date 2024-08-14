@@ -8,6 +8,7 @@ pub mod concatenate;
 pub mod copy;
 pub mod create_directory;
 pub mod create_file;
+pub mod create_link;
 pub mod current_directory;
 pub mod env;
 pub mod remove_directory;
