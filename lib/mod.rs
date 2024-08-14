@@ -4,6 +4,7 @@ pub mod error;
 
 pub mod change_mode;
 pub mod change_ownership;
+pub mod concatenate;
 pub mod copy;
 pub mod create_directory;
 pub mod create_file;

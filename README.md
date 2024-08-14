@@ -116,11 +116,8 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 - [x] `co` (`chown`)
 - [x] `env`
 - [x] `cm` (`chmod`)
+- [x] `cat`
 - [ ] `sl` ((soft) `link`)
-- [ ] `df`
-- [ ] `du`
-- [ ] `cat` ?
-- [ ] `ping` ?
 - [ ] `sh`
   - [ ] `.`
   - [ ] `command`/`\` ?
@@ -128,6 +125,9 @@ srw-------     0 B      root          daemon     vpncontrol.sock
   - [ ] `echo`
   - [ ] `exit`
   - [ ] `type` ?
+- [ ] `ping` ?
+- [ ] `df` ?
+- [ ] `du` ?
 
 - ...and probably more to come!
 
