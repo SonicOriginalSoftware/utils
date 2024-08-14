@@ -117,17 +117,19 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 - [x] `env`
 - [x] `cm` (`chmod`)
 - [x] `cat`
-- [ ] `ln` ((soft) `link`)
+- [x] `ln` ((soft) `link`)
+- [ ] `command` ?
+- [ ] `type` ?
+- [ ] `which` ?
 - [ ] `sh`
   - [ ] `.`
-  - [ ] `command`/`\` ?
   - [ ] `cd`
   - [ ] `echo`
+  - [ ] `alias`
   - [ ] `exit`
-  - [ ] `type` ?
-- [ ] `ping` ?
 - [ ] `df` ?
 - [ ] `du` ?
+- [ ] `ping` ?
 
 - ...and probably more to come!
 
@@ -157,3 +159,19 @@ like using SOSIX utils.
 
 These commands are for human-interactive engagement with a computer. There are
 far better interpreted languages for such tasks.
+
+# Install
+
+## From source
+
+```
+cargo install --path .
+```
+
+# Uninstall
+
+## From source
+
+```
+cargo uninstall --package utils
+```
