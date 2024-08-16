@@ -1,3 +1,5 @@
+use std::{fs::rename, path::Path};
+
 use crate::error::Error;
 
 pub fn run(args: Vec<String>) -> Result<(), Error> {
@@ -11,7 +13,12 @@ pub fn run(args: Vec<String>) -> Result<(), Error> {
         None => return Err(Error::Str("No destination given")),
     };
 
-    match std::fs::rename(source, target) {
+    let mut target_path = Path::new(&target).to_owned();
+    if target_path.exists() && target_path.is_dir() {
+        target_path = target_path.join(source);
+    }
+
+    match rename(source, target_path) {
         Ok(_) => Ok(()),
         Err(e) => Err(Error::IO(e)),
     }

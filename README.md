@@ -89,18 +89,18 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 ## Commands
 
 - [x] `pwd`
-- [ ] `cp`
+- `cp`
   - files
     - [x] `cp ${source_file} ${destination_file}`
-    - [ ] `cp ${source_file} ${destination_folder}`
+    - [x] `cp ${source_file} ${destination_folder}`
   - directories
     - [ ] `cp ${source_folder} ${destination_folder}`
 - `mv`
   - files
     - [x] `mv ${source_file} ${destination_file}`
-    - [ ] `mv ${source_file} ${destination_folder}`
+    - [x] `mv ${source_file} ${destination_folder}`
   - directories
-    - [ ] `mv ${source_folder} ${destination_folder}`
+    - [x] `mv ${source_folder} ${destination_folder}`
 - [x] `ls`
 - [x] `stat`
 - [x] `touch`
@@ -118,6 +118,7 @@ srw-------     0 B      root          daemon     vpncontrol.sock
 - [x] `cm` (`chmod`)
 - [x] `cat`
 - [x] `ln` ((soft) `link`)
+- [ ] `kill`
 - [ ] `command` ?
 - [ ] `type` ?
 - [ ] `which` ?
